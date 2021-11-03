@@ -5,7 +5,6 @@ const cors = require('cors');
 const morgan = require('morgan');
 const colors = require('colour');
 const xss = require('xss');
-const errorHandler = require('./middleware/error');
 const db = require('./config/db');
 
 // Load env vars
@@ -51,8 +50,6 @@ app.use('/api/v1/', categoryRoutes);
 app.use('/api/v1/', productRoutes)
 
 
-
-app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
