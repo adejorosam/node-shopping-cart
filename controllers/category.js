@@ -1,5 +1,7 @@
 //category.js
 const Category = require("../models").Category;
+const {categorySchema} = require("../validators/category");
+
 
 
 module.exports = {
@@ -9,14 +11,14 @@ module.exports = {
   async getAllCategories(req, res) {
     try {
       const categoryCollection = await Category.findAll({})
-      res.status(200).json({
+      return res.status(200).json({
         success:true, 
         msg: "Category retrieved successfully",
         data: categoryCollection
     }); 
     } catch (e) {
         console.log(e)
-        res.status(500).send(e)
+        return res.status(500).send(e)
         }
   },
     // @desc    Get a category
@@ -26,14 +28,14 @@ module.exports = {
     try {
       const categoryCollection = await Category.findByPk(req.params.categoryId)
         if(categoryCollection === null){
-            res.status(404).json({
+            return res.status(404).json({
                 success:true, 
                 msg: `Category with the id of ${req.params.categoryId} does not exist`,
                 data: categoryCollection
         });
         }
         else{
-        res.status(200).json({
+        return res.status(200).json({
             success:true, 
             msg: "Category retrieved successfully",
             data: categoryCollection
@@ -41,7 +43,7 @@ module.exports = {
     } 
     } catch (e) {
         console.log(e)
-        res.status(500).send(e)
+        return res.status(500).send(e)
     }
   },
     // @desc    Create a new category
@@ -49,21 +51,24 @@ module.exports = {
     // @access  Private
   async createCategory(req, res) {
     try {
-        const categoryExists = await Category.findAll({ where:{name: req.body.name }});
-        if(categoryExists.length != 0){
+      const result = await categorySchema.validateAsync(req.body)
+
+        const categoryExists = await Category.findOne({ where:{name: req.body.name }});
+        if(categoryExists){
             return res.status(400).json({error_msg: "Category with the name exists"});
         }  
         const categoryCollection = await Category.create({
             name: req.body.name,
+            description: req.body.description
         })
-        res.status(201).json({
+        return res.status(201).json({
             success:true, 
             msg: "Category created successfully",
             data: categoryCollection
         });    
     } catch (e) {
-      console.log(e)
-      res.status(400).send(e)
+      return res.status(400).json({ error_msg: e.message });
+
     }
   },
     // @desc    Update a particular category in the database
@@ -71,25 +76,31 @@ module.exports = {
     // @access  Private
   async updateCategory(req, res) {
     try {
+        const result = await categorySchema.validateAsync(req.body)
         const category = await Category.findByPk(req.params.categoryId)
           if(category === null){
-              res.status(404).json({
+              return res.status(404).json({
                   success:true, 
                   msg: `Category with the id of ${req.params.categoryId} does not exist`,
                   data: category
           });
           }
           else{
-          await category.update({name:req.body.name});
-          res.status(200).json({
+          await category.update({
+            name:req.body.name ? req.body.name : category.name,
+            description:req.body.description ? req.body.description : category.description,
+            isActive: req.body.isActive ? req.body.isActive : category.isActive
+
+          });
+          return res.status(200).json({
             success:true, 
-            msg: "Category created successfully",
+            msg: "Category updated successfully",
             data: category
         });
       } 
       } catch (e) {
           console.log(e)
-          res.status(500).send(e)
+          return res.status(500).send(e)
       }
 },
 
@@ -100,7 +111,7 @@ module.exports = {
         try {
             const category = await Category.findByPk(req.params.categoryId)
               if(category === null){
-                  res.status(404).json({
+                  return res.status(404).json({
                       success:true, 
                       msg: `Category with the id of ${req.params.categoryId} does not exist`,
                       data: category
@@ -108,11 +119,11 @@ module.exports = {
               }
               else{
                await category.destroy();
-               res.status(204).json();
+               return res.status(204).json();
           } 
           } catch (e) {
               console.log(e)
-              res.status(500).send(e)
+              return res.status(500).send(e)
           }
     },
 }

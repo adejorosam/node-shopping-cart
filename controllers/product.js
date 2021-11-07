@@ -1,5 +1,7 @@
 //Product.js
 const Product = require("../models").Product;
+const Category = require("../models").Category
+const {productSchema} = require("../validators/product")
 
 
 module.exports = {
@@ -9,14 +11,14 @@ module.exports = {
   async getProductsByCategory(req, res){
     try {
       const products = await Product.findAll({ where:{categoryId: req.params.categoryId }});      
-      res.status(200).json({
+      return res.status(200).json({
         success:true, 
         msg: "Product retrieved successfully",
         data: products
     }); 
     } catch (e) {
         console.log(e)
-        res.status(500).send(e)
+        return res.status(500).send(e)
         }
   },
     // @desc    Get all products
@@ -26,14 +28,14 @@ module.exports = {
     try {
 
       const productCollection = await Product.findAll({})
-      res.status(200).json({
+      return res.status(200).json({
         success:true, 
         msg: "Products retrieved successfully",
         data: productCollection
     }); 
     } catch (e) {
         console.log(e)
-        res.status(500).send(e)
+        return res.status(500).send(e)
         }
   },
     // @desc    Get a Product
@@ -43,14 +45,14 @@ module.exports = {
     try {
       const productCollection = await Product.findByPk(req.params.productId)
         if(productCollection === null){
-            res.status(404).json({
+            return res.status(404).json({
                 success:true, 
                 msg: `Product with the id of ${req.params.productId} does not exist`,
                 data: productCollection
         });
         }
         else{
-        res.status(200).json({
+        return res.status(200).json({
             success:true, 
             msg: "Product retrieved successfully",
             data: productCollection
@@ -58,7 +60,7 @@ module.exports = {
     } 
     } catch (e) {
         console.log(e)
-        res.status(500).send(e)
+        return res.status(500).send(e)
     }
   },
     // @desc    Create a new Product
@@ -66,16 +68,23 @@ module.exports = {
     // @access  Private
   async createProduct(req, res) {
     try {
+        const result = await productSchema.validateAsync(req.body)
         const ProductExists = await Product.findAll({ where:{name: req.body.name }});
-  
+        const CategoryExists = await Category.findAll({where: {id:req.body.categoryId}})
+
+
+        if(CategoryExists.length === 0){
+          return res.status(400).json({error_msg: "Category not found"});
+      }  
         if(ProductExists.length != 0){
             return res.status(400).json({error_msg: "Product with the name exists"});
         }  
-        
+       
         const productCollection = await Product.create({
             name: req.body.name,
             sellingPrice:req.body.sellingPrice,
             userId:req.user.id,
+            description: req.body.description,
             availableQuantity:req.body.availableQuantity,
             costPrice: req.body.costPrice,
             categoryId:req.body.categoryId,
@@ -83,14 +92,13 @@ module.exports = {
             expirationDate:req.body.expirationDate
 
         })
-        res.status(201).json({
+        return res.status(201).json({
             success:true, 
             msg: "Product created successfully",
             data: productCollection
         });    
     } catch (e) {
-      console.log(e)
-      res.status(400).send(e)
+      return res.status(400).json({ error_msg: e.message });
     }
   },
     // @desc    Update a particular product in the database
@@ -98,9 +106,10 @@ module.exports = {
     // @access  Private
   async updateProduct(req, res) {
     try {
+      const result = await productSchema.validateAsync(req.body)
         const product = await Product.findByPk(req.params.productId)
           if(product === null){
-              res.status(404).json({
+              return res.status(404).json({
                   success:true, 
                   msg: `Product with the id of ${req.params.productId} does not exist`,
                   data: product
@@ -109,6 +118,7 @@ module.exports = {
           else{
             await product.update({    
               name: req.body.name ? req.body.name : product.name,
+              description: req.body.description ? req.body.description : product.description,
               sellingPrice:req.body.sellingPrice ? req.body.sellingPrice : product.sellingPrice,
               userId:req.user.id,
               availableQuantity:req.body.availableQuantity ? req.body.availableQuantity : product.availableQuantity,
@@ -117,7 +127,7 @@ module.exports = {
               sku:product.sku,
               expirationDate:req.body.expirationDate ? req.body.categoryId : product.expirationDate
             });
-          res.status(200).json({
+          return res.status(200).json({
             success:true, 
             msg: "Product updated successfully",
             data: product
@@ -125,7 +135,7 @@ module.exports = {
       } 
       } catch (e) {
           console.log(e)
-          res.status(500).send(e)
+          return res.status(400).json({ error_msg: e.message });
       }
 },
 
@@ -136,7 +146,7 @@ module.exports = {
         try {
             const product = await Product.findByPk(req.params.productId)
               if(product === null){
-                  res.status(404).json({
+                  return res.status(404).json({
                       success:true, 
                       msg: `Product with the id of ${req.params.productId} does not exist`,
                       data: product
@@ -144,11 +154,11 @@ module.exports = {
               }
               else{
                await product.destroy();
-               res.status(204).json();
+               return res.status(204).json();
           } 
           } catch (e) {
               console.log(e)
-              res.status(500).send(e)
+              return res.status(500).send(e)
           }
     },
 }
