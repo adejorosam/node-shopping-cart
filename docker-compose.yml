@@ -3,6 +3,7 @@ version: '3.8'
 services:
   mysqldb:
     image: mysql:5.7
+    platform: linux/amd64
     restart: unless-stopped
     env_file: ./.env
     environment:
@@ -15,19 +16,19 @@ services:
   app:
     depends_on:
       - mysqldb
-    build: \
+    build: .
     restart: unless-stopped
     env_file: ./.env
     ports:
-      - $NODE_LOCAL_PORT:$NODE_DOCKER_PORT
+      - "3000:3000"
     environment:
+      - MYSQL_ROOT_PASSWORD=$MYSQL_DB_PASSWORD
       - DB_HOST=mysqldb
       - DB_USER=$DB_USER
-      - DB_PASSWORD=$DB_PASSWORD
       - DB_NAME=$DB_NAME
       - DB_PORT=$DB_DOCKER_PORT
     stdin_open: true
     tty: true
 
-volumes: 
+volumes:
   db:
