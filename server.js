@@ -11,7 +11,6 @@ const db = require('./config/db');
 dotenv.config({ path: './config/config.env' });
 
 
-
 // Test DB
 db.authenticate()
   .then(() => console.log('Database connected...'))
@@ -21,7 +20,7 @@ db.authenticate()
 const authRoutes = require("./routes/user");
 const categoryRoutes = require('./routes/category');
 const productRoutes = require('./routes/product');
-
+const cartRoutes = require("./routes/cart");
 const app = express();
 
 // Body parser
@@ -42,12 +41,13 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
-app.use('/', (req, res)  => {
+app.use('/home', (req, res)  => {
   return res.json("Welcome to Cart Service API")
 })
-app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/auth/", authRoutes);
 app.use('/api/v1/', categoryRoutes);
-app.use('/api/v1/', productRoutes)
+app.use('/api/v1/', productRoutes);
+app.use('/api/v1/', cartRoutes );
 
 
 

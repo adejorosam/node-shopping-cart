@@ -1,14 +1,23 @@
-//CATEGORY Schema
+//Cart Schema
 module.exports = (sequelize, DataTypes) => {
-    let Category = sequelize.define("Category", {
-      name: DataTypes.STRING,
-    })
-    Category.associate = function(models) {
-      Category.hasMany(models.Product, {
-        onDelete: "CASCADE",
-        foreignKey: "productId",
-      })
-    }
+  let Cart = sequelize.define("Cart", {
+    // cartId : DataTypes.INTEGER,
+    quantity: DataTypes.INTEGER,
+    productId: DataTypes.INTEGER,
+    price: DataTypes.DOUBLE,
+    totalPrice: DataTypes.DOUBLE
+  })
 
-    return Category
-  }
+  Cart.associate = function(models) {
+    Cart.belongsTo(models.Product),{
+      onDelete: "CASCADE",
+      foreignKey: "productId"
+    }
+  };
+  // Product.belongsTo(models.Category, {
+  //   onDelete: "CASCADE",
+  //   foreignKey: "categoryId",
+  // })
+
+  return Cart
+}
