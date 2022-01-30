@@ -45,6 +45,7 @@ module.exports = {
                      //if not, create a new cart
                     const createCart = await Cart.create({
                         productId: req.body.productId,
+                        userId:req.user.id,
                         quantity:req.body.quantity ? req.body.quantity : 1,
                         price: productCollection.sellingPrice,
                         totalPrice: req.body.quantity ? productCollection.sellingPrice * req.body.quantity : 1 * productCollection*sellingPrice
