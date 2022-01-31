@@ -1,7 +1,9 @@
 //cart.js
 const Cart = require("../models").Cart;
 const Product = require("../models").Product;
+const cart_product = require("../models").cart_products;
 const {cartSchema} = require("../validators/cart")
+const db = require('../config/db');
 module.exports = {
 
      // @desc  Delete a particular product from the cart
@@ -18,7 +20,9 @@ module.exports = {
      *  if product isn't in cart; add it to cart with specified quantity or set it to one.
   */
     async addToCart(req, res) {
+        const t = await db.transaction();
         try {
+
             const result = await cartSchema.validateAsync(req.body)
             //check if product exists
             const productCollection = await Product.findByPk(req.body.productId)
@@ -43,13 +47,25 @@ module.exports = {
             {
                 if(req.body.cartId === undefined){
                      //if not, create a new cart
+                    //  console.log(req.user)
                     const createCart = await Cart.create({
-                        productId: req.body.productId,
+                        // productId: req.body.productId,
                         userId:req.user.id,
                         quantity:req.body.quantity ? req.body.quantity : 1,
                         price: productCollection.sellingPrice,
                         totalPrice: req.body.quantity ? productCollection.sellingPrice * req.body.quantity : 1 * productCollection*sellingPrice
-                    })
+                    }, { transaction: t })
+                    // console.log()
+
+                    if(createCart){
+                        // console.log(createCart.dataValues.id)
+                        const cartProduct = await cart_product.create({
+                            cartId: createCart.dataValues.id,
+                            productId: req.body.productId,
+                          }, { transaction: t })
+                    }
+                    // console.log(cart_product)
+                    await t.commit();
 
                     return res.status(201).json({
                         success:true, 
@@ -82,16 +98,22 @@ module.exports = {
             }
 
         } catch (e) {
-            return res.status(400).json({ error_msg: e.message });
+             // If the execution reaches this line, an error was thrown.
+            // We rollback the transaction.
+            await t.rollback();
+            return res.status(500).json({ error_msg: e.message });
         }
       },
 
     // @desc    Get a cart
     // @route   POST /api/v1/carts/cartId
     // @access  Public
+   
     async retrieveCart(req, res) {
         try {
-          const cartCollection = await Cart.findAll({where:{cartId:req.params.cartId}, include: Product})
+          const cartCollection = await Cart.findOne({where:{id:req.params.cartId}, 
+       
+        })
             if(cartCollection === null){
                 return res.status(404).json({
                     success:true, 

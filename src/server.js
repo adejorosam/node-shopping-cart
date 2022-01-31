@@ -16,6 +16,8 @@ db.authenticate()
   .then(() => console.log('Database connected...'))
   .catch(err => console.log('Error: ' + err))
 
+// db.sync({force: true})
+
 // Route files
 const authRoutes = require("./routes/user");
 const categoryRoutes = require('./routes/category');
@@ -51,7 +53,7 @@ app.use('/api/v1/', cartRoutes );
 
 
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 const server = app.listen(
   PORT,

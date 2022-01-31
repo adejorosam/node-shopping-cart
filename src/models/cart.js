@@ -3,11 +3,12 @@ module.exports = (sequelize, DataTypes) => {
   let Cart = sequelize.define("Cart", {
     // cartId : DataTypes.INTEGER,
     quantity: DataTypes.INTEGER,
-    productId: DataTypes.INTEGER,
     userId: DataTypes.INTEGER,
     price: DataTypes.DOUBLE,
     totalPrice: DataTypes.DOUBLE
   })
+
+ 
 
   Cart.associate = function(models) {
     Cart.belongsTo(models.User, {
@@ -17,12 +18,12 @@ module.exports = (sequelize, DataTypes) => {
   }
 
   Cart.associate = function(models) {
-    Cart.belongsTo(models.Product),{
-      onDelete: "CASCADE",
-      foreignKey: "productId"
-    }
+    Cart.belongsToMany(models.Product,{
+      through: "cart_products",
+      as: "products",
+      foreignKey: "productId",
+    })
   };
- 
 
   return Cart
 }

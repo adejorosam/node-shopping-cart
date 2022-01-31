@@ -67,7 +67,7 @@ module.exports = {
             data: categoryCollection
         });    
     } catch (e) {
-      return res.status(400).json({ error_msg: e.message });
+      return res.status(500).json({ error_msg: e.message });
 
     }
   },

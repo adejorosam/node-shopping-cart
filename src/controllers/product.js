@@ -72,7 +72,6 @@ module.exports = {
         const ProductExists = await Product.findAll({ where:{name: req.body.name }});
         const CategoryExists = await Category.findAll({where: {id:req.body.categoryId}})
 
-
         if(CategoryExists.length === 0){
           return res.status(400).json({error_msg: "Category not found"});
       }  

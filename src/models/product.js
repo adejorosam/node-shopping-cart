@@ -13,6 +13,15 @@ module.exports = (sequelize, DataTypes) => {
     availableQuantity:DataTypes.INTEGER
     
   })
+
+  Product.associate = function(models) {
+    Product.belongsToMany(models.Cart,{
+      through: "cart_products",
+      // as: "carts",
+      // foreignKey: "cartId",
+    })
+  };
+
   Product.associate = function(models) {
     Product.belongsTo(models.User, {
       onDelete: "CASCADE",
@@ -27,6 +36,5 @@ module.exports = (sequelize, DataTypes) => {
       })
     }
 
-   
   return Product
 }
