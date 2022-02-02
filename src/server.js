@@ -55,7 +55,7 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
-app.use('/home', (req, res)  => {
+app.use('/home', (req, res, next)  => {
   return res.json("Welcome to Cart Service API")
 })
 app.use("/api/v1/auth/", authRoutes);

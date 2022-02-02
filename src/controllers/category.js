@@ -3,6 +3,7 @@ const Category = require("../models").Category;
 const {categorySchema} = require("../validators/category");
 const { handleError, ErrorHandler } = require('../utils/error')
 const ErrorResponse = require('../utils/error');
+const SuccessResponse = require('../utils/success')
 
 
 
@@ -12,15 +13,11 @@ module.exports = {
     // @desc    Get all categories
     // @route   POST /api/v1/categories
     // @access  Public
-  async getAllCategories(req, res) {
+  async getAllCategories(req, res, next) {
     try {
       const categoryCollection = await Category.findAll({})
-      return SuccessResponse("Category retrieved successfully", categoryCollection,  200)
-    //   return res.status(200).json({
-    //     success:true, 
-    //     msg: "Category retrieved successfully",
-    //     data: categoryCollection
-    // }); 
+      return SuccessResponse(res, "Category retrieved successfully", categoryCollection,  200)
+      
     } catch (e) {
         console.log(e)
         return next(new ErrorResponse(e, 500));
@@ -36,11 +33,8 @@ module.exports = {
           return next(new ErrorResponse(`Category with the id of ${req.params.categoryId} does not exist`, 404));
         }
         else{
-        return res.status(200).json({
-            success:true, 
-            msg: "Category retrieved successfully",
-            data: categoryCollection
-        });
+          return SuccessResponse(res, "Category retrieved successfully", categoryCollection,  200)
+
     } 
     } catch (e) {
         console.log(e)
@@ -51,7 +45,7 @@ module.exports = {
     // @desc    Create a new category
     // @route   POST /api/v1/categories
     // @access  Private
-  async createCategory(req, res) {
+  async createCategory(req, res, next) {
     try {
       const result = await categorySchema.validateAsync(req.body)
 
@@ -63,11 +57,8 @@ module.exports = {
             name: req.body.name,
             description: req.body.description
         })
-        return res.status(201).json({
-            success:true, 
-            msg: "Category created successfully",
-            data: categoryCollection
-        });    
+        return SuccessResponse(res, "Category created successfully", categoryCollection,  201)
+
     } catch (e) {
       return res.status(500).json({ error_msg: e.message });
 
@@ -76,7 +67,7 @@ module.exports = {
     // @desc    Update a particular category in the database
     // @route   PATCH /api/v1/categories/:categoryId
     // @access  Private
-  async updateCategory(req, res) {
+  async updateCategory(req, res, next) {
     try {
         const result = await categorySchema.validateAsync(req.body)
         const category = await Category.findByPk(req.params.categoryId)
@@ -92,11 +83,9 @@ module.exports = {
             isActive: req.body.isActive ? req.body.isActive : category.isActive
 
           });
-          return res.status(200).json({
-            success:true, 
-            msg: "Category updated successfully",
-            data: category
-        });
+          return SuccessResponse(res, "Category updated successfully", categoryCollection,  200)
+
+       
       } 
       } catch (e) {
           console.log(e)
@@ -108,7 +97,7 @@ module.exports = {
     // @desc    Delete a particular category in the database
     // @route   DELETE /api/v1/category/:categoryId
     // @access  Private
-    async deleteCategory(req, res) {
+    async deleteCategory(req, res, next) {
         try {
             const category = await Category.findByPk(req.params.categoryId)
               if(category === null){

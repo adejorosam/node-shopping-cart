@@ -1,7 +1,7 @@
 //Product.js
 const Product = require("../models").Product;
 const Category = require("../models").Category
-// const ErrorHandler = require("../utils/error")
+const SuccessResponse = require("../utils/success")
 const ErrorResponse = require('../utils/error');
 const {productSchema} = require("../validators/product")
 
@@ -10,14 +10,11 @@ module.exports = {
     // @desc    Get all products belonging to a category
     // @route   POST /api/v1/category/categoryId/products
     // @access  Public
-  async getProductsByCategory(req, res){
+  async getProductsByCategory(req, res, next){
     try {
-      const products = await Product.findAll({ where:{categoryId: req.params.categoryId }});      
-      return res.status(200).json({
-        success:true, 
-        msg: "Product retrieved successfully",
-        data: products
-    }); 
+      const products = await Product.findAll({ where:{categoryId: req.params.categoryId }});  
+      return SuccessResponse(res, "Product retrieved successfully", products,  200)
+   
     } catch (e) {
         console.log(e)
         return next(new ErrorResponse(e.message, 500));
@@ -27,15 +24,12 @@ module.exports = {
     // @desc    Get all products
     // @route   POST /api/v1/products
     // @access  Public
-  async getAllProducts(req, res) {
+  async getAllProducts(req, res, next) {
     try {
 
       const productCollection = await Product.findAll({})
-      return res.status(200).json({
-        success:true, 
-        msg: "Products retrieved successfully",
-        data: productCollection
-    }); 
+      return SuccessResponse(res, "Product retrieved successfully", productCollection,  200)
+
     } catch (e) {
         console.log(e)
         return next(new ErrorResponse(e.message, 500));
@@ -52,11 +46,8 @@ module.exports = {
 
         }
         else{
-        return res.status(200).json({
-            success:true, 
-            msg: "Product retrieved successfully",
-            data: productCollection
-        });
+          return SuccessResponse(res, "Product retrieved successfully", productCollection,  200)
+
     } 
     } 
     catch (e) {
@@ -68,7 +59,7 @@ module.exports = {
     // @desc    Create a new Product
     // @route   POST /api/v1/products
     // @access  Private
-  async createProduct(req, res) {
+  async createProduct(req, res, next) {
     try {
         const result = await productSchema.validateAsync(req.body)
         const ProductExists = await Product.findAll({ where:{name: req.body.name }});
@@ -94,11 +85,8 @@ module.exports = {
             expirationDate:req.body.expirationDate
 
         })
-        return res.status(201).json({
-            success:true, 
-            msg: "Product created successfully",
-            data: productCollection
-        });    
+        return SuccessResponse(res, "Product created successfully", productCollection,  201)
+  
     } catch (e) {
       return next(new ErrorResponse(e.message, 500));
     }
@@ -106,7 +94,7 @@ module.exports = {
     // @desc    Update a particular product in the database
     // @route   PATCH /api/v1/products/:productId
     // @access  Private
-  async updateProduct(req, res) {
+  async updateProduct(req, res, next) {
     try {
       const result = await productSchema.validateAsync(req.body)
         const product = await Product.findByPk(req.params.productId)
@@ -126,11 +114,8 @@ module.exports = {
               sku:product.sku,
               expirationDate:req.body.expirationDate ? req.body.categoryId : product.expirationDate
             });
-          return res.status(200).json({
-            success:true, 
-            msg: "Product updated successfully",
-            data: product
-        });
+            return SuccessResponse(res, "Product updated successfully", product,  200)
+
       } 
       } catch (e) {
           console.log(e)
@@ -141,7 +126,7 @@ module.exports = {
     // @desc    Delete a particular product in the database
     // @route   DELETE /api/v1/Product/:productId
     // @access  Private
-    async deleteProduct(req, res) {
+    async deleteProduct(req, res, next) {
         try {
             const product = await Product.findByPk(req.params.productId)
               if(product === null){

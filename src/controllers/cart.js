@@ -4,6 +4,7 @@ const Product = require("../models").Product;
 const CartProduct = require("../models").cart_products;
 const {cartSchema} = require("../validators/cart")
 const ErrorResponse = require('../utils/error');
+const SuccessResponse = require('../utils/success')
 const db = require('../config/db');
 module.exports = {
 
@@ -20,7 +21,7 @@ module.exports = {
      *  if product is already in cart; modify product with quantity supplied or just add 1 to quantity
      *  if product isn't in cart; add it to cart with specified quantity or set it to one.
   */
-    async addToCart(req, res) {
+    async addToCart(req, res, next) {
         const t = await db.transaction();
         try {
 
@@ -29,16 +30,12 @@ module.exports = {
             const productCollection = await Product.findByPk(req.body.productId)
             if(productCollection === null){
                 return next(new ErrorResponse(`Product with the id of ${req.params.productId} does not exist`, 404));
-         
-                
             }
 
             if (productCollection.availableQuantity < 1) {
-                return res.status(200).json({
-                    success:true, 
-                    msg: "Product is Out of Stock!",
-                    data: null
-                });  
+               
+                return SuccessResponse(res, "Product is out of stock", null,  200)
+
             }
 
             //check if cartId is supplied
@@ -46,7 +43,6 @@ module.exports = {
             {
                 if(req.body.cartId === undefined){
                      //if not, create a new cart
-                    //  console.log(req.user)
                     const createCart = await Cart.create({
                         // productId: req.body.productId,
                         userId:req.user.id,
@@ -57,7 +53,6 @@ module.exports = {
                     // console.log()
 
                     if(createCart){
-                        // console.log(createCart.dataValues.id)
                         const cartProduct = await CartProduct.create({
                             cartId: createCart.dataValues.id,
                             productId: req.body.productId,
@@ -66,11 +61,8 @@ module.exports = {
                     // console.log(cart_product)
                     await t.commit();
 
-                    return res.status(201).json({
-                        success:true, 
-                        msg: "Product added to cart successfully",
-                        data: createCart
-                    });      
+                    return SuccessResponse(res, "Product added to cart successfully", createCart,  201)
+   
                 }
                 else{
                     const cartCollection = await Cart.findByPk(req.body.cartId)
@@ -83,11 +75,9 @@ module.exports = {
                                 quantity:req.body.quantity ? req.body.quantity : cartCollection.quantity+1,
                                 totalPrice: req.body.quantity ? productCollection.sellingPrice * req.body.quantity : (cartCollection.quantity+1) * productCollection*sellingPrice
                               });
-                            return res.status(200).json({
-                              success:true, 
-                              msg: "Cart modified successfully",
-                              data: cartCollection
-                          });
+                              return SuccessResponse(res, "Cart modified successfully",cartCollection,  200)
+
+                        
                         }
                     }
                 }
@@ -105,7 +95,7 @@ module.exports = {
     // @route   POST /api/v1/carts/cartId
     // @access  Public
    
-    async retrieveCart(req, res) {
+    async retrieveCart(req, res, next) {
         try {
           const cartCollection = await Cart.findOne({where:{id:req.params.cartId}, 
        
@@ -115,11 +105,9 @@ module.exports = {
             return next(new ErrorResponse(`Cart with the id of ${req.params.cartId} does not exist`, 404));
             }
             else{
-            return res.status(200).json({
-                success:true, 
-                msg: "Cart retrieved successfully",
-                data: cartCollection
-            });
+           
+            return SuccessResponse(res, "Cart retrieved successfully",cartCollection,  200)
+
         } 
         } catch (e) {
             // console.log(e)
@@ -138,7 +126,7 @@ module.exports = {
      *  if product isn't found return not found error
      *  update cart and return the updated cart
   */
-    async modifyCart(req, res) {
+    async modifyCart(req, res, next) {
         try {
          const result = await cartSchema.validateAsync(req.body)
           const cartCollection = await Cart.findByPk(parseInt(req.params.cartId))
@@ -154,11 +142,8 @@ module.exports = {
                 
             }
                 if (productCollection.availableQuantity < 1) {
-                    return res.status(200).json({
-                        success:true, 
-                        msg: "Product is Out of Stock!",
-                        data: null
-                    });  
+                    return SuccessResponse(res, "Product is out of stock",null,  200)
+
                 }
                 checkCart = CartProduct.findAll({where: {productId:req.body.productId, cartId:req.params.cartId }})
                 if(checkCart === null){
@@ -171,11 +156,8 @@ module.exports = {
                     quantity:req.body.quantity ? req.body.quantity : cartCollection.quantity,
                     totalPrice : req.body.quantity ? req.body.quantity*productCollection.sellingPrice : cartCollection.quantity*productCollection.sellingPrice
                   });
-                return es.status(200).json({
-                  success:true, 
-                  msg: "Cart modified successfully",
-                  data: cartCollection
-              });
+                  return SuccessResponse(res, "Cart modified successfully",cartCollection,  200)
+
             }
                 
         } 
@@ -195,7 +177,7 @@ module.exports = {
      *  if product id isn't found, return not found error
      *  if found, update cart and return the removed product
   */
-    async removeFromCart(req, res) {
+    async removeFromCart(req, res, next) {
         try {
         
           const cartCollection = await Cart.findByPk(parseInt(req.params.cartId))
@@ -215,11 +197,8 @@ module.exports = {
                 }else{
 
                     await checkCart.destroy()
-                    return res.status(200).json({
-                        success:true, 
-                        msg: "Product removed successfully",
-                        data: null
-                    }); 
+                    return SuccessResponse(res, "Product removed successfully",null,  200)
+
                 }
             }
 
