@@ -8,7 +8,7 @@ const getSignedToken = require('../utils/getSignedToken');
 module.exports = {
 
     
-    async login(req, res){
+    async login(req, res, next){
         try{
             const result = await authSchema.validateAsync(req.body)
             const user = await User.findOne({ where:{email: req.body.email}});
@@ -22,21 +22,23 @@ module.exports = {
             const token = await getSignedToken(user);
             return res.status(200).json({token: token});
             
-          }catch(error){
-            return res.status(400).json({ error_msg: error.message });
+          }catch(e){
+            return next(new ErrorResponse(e.message, 500));
+
           }
     },
     
-  async getAllUsers(req, res) {
+  async getAllUsers(req, res, next) {
     try {
       const userCollection = await User.find({})
       return res.status(201).send(userCollection)
     } catch (e) {
       console.log(e)
-      return res.status(500).send(e)
+      return next(new ErrorResponse(e.message, 500));
+
     }
   },
-  async createUser(req, res) {
+  async createUser(req, res, next) {
     try {
  
       const userExists = await User.findOne({ where:{email: req.body.email}});
@@ -56,7 +58,7 @@ module.exports = {
         });    
     } catch (e) {
       console.log(e)
-      return res.status(400).send(e)
+      return res.status(500).send(e.message)
     }
   },
 

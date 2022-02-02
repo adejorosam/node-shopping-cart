@@ -1,11 +1,15 @@
 const path = require('path');
-const express = require('express');
-const dotenv = require('dotenv');
+const express = require('express')
+const dotenv = require('dotenv')
 const cors = require('cors');
-const morgan = require('morgan');
-const colors = require('colour');
-const xss = require('xss');
-const db = require('./config/db');
+const morgan = require('morgan')
+const colors = require('colour')
+const xss = require('xss')
+const db = require('./config/db')
+const handleError = require('./utils/error')
+// const errorHandler  = require('./utils/error')
+const errorHandlerMiddleware = require('./middleware/errorHandlerMiddleware')
+
 
 // Load env vars
 dotenv.config({ path: './config/config.env' });
@@ -23,18 +27,26 @@ const authRoutes = require("./routes/user");
 const categoryRoutes = require('./routes/category');
 const productRoutes = require('./routes/product');
 const cartRoutes = require("./routes/cart");
+const authMiddleware = require('./middleware/authMiddleware');
 const app = express();
 
 // Body parser
 app.use(express.json());
 
-
+// Error handler middleware
+// app.use((err, req, res, next) => {
+//   handleError(err, res);
+//   // next()
+// });
 
 // Dev logging middleware
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
+
+// app.use(errorHandlerMiddleware)
+// app.use(authMiddleware)
 
 // Enable CORS
 app.use(cors());
@@ -51,6 +63,7 @@ app.use('/api/v1/', categoryRoutes);
 app.use('/api/v1/', productRoutes);
 app.use('/api/v1/', cartRoutes );
 
+app.use(errorHandlerMiddleware);
 
 
 const PORT = process.env.PORT || 3000;

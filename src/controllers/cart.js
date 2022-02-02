@@ -1,8 +1,9 @@
 //cart.js
 const Cart = require("../models").Cart;
 const Product = require("../models").Product;
-const cart_product = require("../models").cart_products;
+const CartProduct = require("../models").cart_products;
 const {cartSchema} = require("../validators/cart")
+const ErrorResponse = require('../utils/error');
 const db = require('../config/db');
 module.exports = {
 
@@ -27,11 +28,9 @@ module.exports = {
             //check if product exists
             const productCollection = await Product.findByPk(req.body.productId)
             if(productCollection === null){
-                return res.status(404).json({
-                    success:true, 
-                    msg: `Product with the id of ${req.body.productId} does not exist`,
-                    data: null
-            });      
+                return next(new ErrorResponse(`Product with the id of ${req.params.productId} does not exist`, 404));
+         
+                
             }
 
             if (productCollection.availableQuantity < 1) {
@@ -59,7 +58,7 @@ module.exports = {
 
                     if(createCart){
                         // console.log(createCart.dataValues.id)
-                        const cartProduct = await cart_product.create({
+                        const cartProduct = await CartProduct.create({
                             cartId: createCart.dataValues.id,
                             productId: req.body.productId,
                           }, { transaction: t })
@@ -76,11 +75,8 @@ module.exports = {
                 else{
                     const cartCollection = await Cart.findByPk(req.body.cartId)
                     if(cartCollection === null){
-                        return res.status(404).json({
-                            success:true, 
-                            msg: `Cart with the id of ${req.body.cartId} does not exist`,
-                            data: null
-                        });
+                        return next(new ErrorResponse(`Cart with the id of ${req.params.cartId} does not exist`, 404));
+                       
                     }else{
                         if(cartCollection.productId === productCollection.id){
                             await cartCollection.update({    
@@ -115,11 +111,8 @@ module.exports = {
        
         })
             if(cartCollection === null){
-                return res.status(404).json({
-                    success:true, 
-                    msg: `Cart with the id of ${req.params.cartId} does not exist`,
-                    data: cartCollection
-            });
+         
+            return next(new ErrorResponse(`Cart with the id of ${req.params.cartId} does not exist`, 404));
             }
             else{
             return res.status(200).json({
@@ -129,8 +122,9 @@ module.exports = {
             });
         } 
         } catch (e) {
-            console.log(e)
-            return res.status(500).send(e)
+            // console.log(e)
+            return next(new ErrorResponse(e.message, 500));
+
         }
       },
       // @desc  Modify cart
@@ -149,21 +143,15 @@ module.exports = {
          const result = await cartSchema.validateAsync(req.body)
           const cartCollection = await Cart.findByPk(parseInt(req.params.cartId))
             if(cartCollection === null){
-                return res.status(404).json({
-                    success:true, 
-                    msg: `Cart with the id of ${req.params.cartId} does not exist`,
-                    data: null
-            });
+                return next(new ErrorResponse(`Cart with the id of ${req.params.cartId} does not exist`, 404));
+            
             }
             else{
      
                 const productCollection = await Product.findByPk(req.body.productId)
                 if(productCollection === null){
-                    return res.status(404).json({
-                        success:true, 
-                        msg: `Product with the id of ${req.body.productId} does not exist`,
-                        data: null
-                });
+                    return next(new ErrorResponse(`Product with the id of ${req.params.productId} does not exist`, 404));
+                
             }
                 if (productCollection.availableQuantity < 1) {
                     return res.status(200).json({
@@ -172,13 +160,10 @@ module.exports = {
                         data: null
                     });  
                 }
-                checkCart = Cart.findAll({where: {productId:req.body.productId, id:req.params.cartId }})
+                checkCart = CartProduct.findAll({where: {productId:req.body.productId, cartId:req.params.cartId }})
                 if(checkCart === null){
-                    return res.status(404).json({
-                        success:true, 
-                        msg: `Product with the id of ${req.body.productId} does not belong in this cart`,
-                        data: null
-                });
+                    return next(new ErrorResponse(`Product with the id of ${req.params.productId} does not exist in this cart`, 404));
+
             }
             else{
           
@@ -195,7 +180,7 @@ module.exports = {
                 
         } 
         } catch (e) {
-            return res.status(400).json({ error_msg: e.message });
+            return next(new ErrorResponse(e.message, 500));
         }
       },
  
@@ -215,27 +200,18 @@ module.exports = {
         
           const cartCollection = await Cart.findByPk(parseInt(req.params.cartId))
             if(cartCollection === null){
-                return res.status(404).json({
-                    success:true, 
-                    msg: `Cart with the id of ${req.params.cartId} does not exist`,
-                    data: null
-            });
+                return next(new ErrorResponse(`Cart with the id of ${req.params.cartId} does not exist`, 404));
+
             }else{
                 const productCollection = await Product.findByPk(req.body.productId)
                 if(productCollection === null){
-                    return res.status(404).json({
-                        success:true, 
-                        msg: `Product with the id of ${req.body.productId} does not exist`,
-                        data: null
-                });
+                
+                    return next(new ErrorResponse(`Product with the id of ${req.params.productId} does not exist`, 404));
                 }
                 checkCart = await Cart.findOne({where: {productId:req.body.productId, id:req.params.cartId }})
                 if(checkCart === null){
-                    return res.status(404).json({
-                        success:true, 
-                        msg: `Product with the id of ${req.body.productId} does not belong in this cart`,
-                        data: null
-                });
+                    return next(new ErrorResponse(`Product with the id of ${req.params.productId} does not exist`, 404));
+
                 }else{
 
                     await checkCart.destroy()
@@ -249,7 +225,8 @@ module.exports = {
 
         } catch (e) {
             console.log(e)
-            return res.status(500).send(e)
+            return next(new ErrorResponse(e.message, 500));
+
         }
       },
     }

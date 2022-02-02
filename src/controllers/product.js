@@ -1,6 +1,8 @@
 //Product.js
 const Product = require("../models").Product;
 const Category = require("../models").Category
+// const ErrorHandler = require("../utils/error")
+const ErrorResponse = require('../utils/error');
 const {productSchema} = require("../validators/product")
 
 
@@ -18,7 +20,8 @@ module.exports = {
     }); 
     } catch (e) {
         console.log(e)
-        return res.status(500).send(e)
+        return next(new ErrorResponse(e.message, 500));
+
         }
   },
     // @desc    Get all products
@@ -35,21 +38,18 @@ module.exports = {
     }); 
     } catch (e) {
         console.log(e)
-        return res.status(500).send(e)
+        return next(new ErrorResponse(e.message, 500));
         }
   },
     // @desc    Get a Product
     // @route   POST /api/v1/products/productId
     // @access  Private
-  async getAProduct(req, res) {
+  async getAProduct(req, res, next) {
     try {
       const productCollection = await Product.findByPk(req.params.productId)
         if(productCollection === null){
-            return res.status(404).json({
-                success:true, 
-                msg: `Product with the id of ${req.params.productId} does not exist`,
-                data: productCollection
-        });
+          return next(new ErrorResponse(`Product with the id of ${req.params.productId} does not exist`, 404));
+
         }
         else{
         return res.status(200).json({
@@ -58,9 +58,11 @@ module.exports = {
             data: productCollection
         });
     } 
-    } catch (e) {
+    } 
+    catch (e) {
         console.log(e)
-        return res.status(500).send(e)
+        return next(new ErrorResponse(e.message, 500));
+
     }
   },
     // @desc    Create a new Product
@@ -73,10 +75,11 @@ module.exports = {
         const CategoryExists = await Category.findAll({where: {id:req.body.categoryId}})
 
         if(CategoryExists.length === 0){
-          return res.status(400).json({error_msg: "Category not found"});
+          return next(new ErrorResponse(`Category with the id of ${req.body.categoryId} does not exist`, 404));
+
       }  
         if(ProductExists.length != 0){
-            return res.status(400).json({error_msg: "Product with the name exists"});
+            return next(new ErrorResponse(`Product with the name of ${req.body.name} exist`, 400));
         }  
        
         const productCollection = await Product.create({
@@ -97,7 +100,7 @@ module.exports = {
             data: productCollection
         });    
     } catch (e) {
-      return res.status(400).json({ error_msg: e.message });
+      return next(new ErrorResponse(e.message, 500));
     }
   },
     // @desc    Update a particular product in the database
@@ -108,11 +111,8 @@ module.exports = {
       const result = await productSchema.validateAsync(req.body)
         const product = await Product.findByPk(req.params.productId)
           if(product === null){
-              return res.status(404).json({
-                  success:true, 
-                  msg: `Product with the id of ${req.params.productId} does not exist`,
-                  data: product
-          });
+            return next(new ErrorResponse(`Product with the id of ${req.params.productId} does not exist`, 404));
+         
           }
           else{
             await product.update({    
@@ -134,7 +134,7 @@ module.exports = {
       } 
       } catch (e) {
           console.log(e)
-          return res.status(400).json({ error_msg: e.message });
+          return next(new ErrorResponse(e.message, 500));
       }
 },
 
@@ -145,19 +145,15 @@ module.exports = {
         try {
             const product = await Product.findByPk(req.params.productId)
               if(product === null){
-                  return res.status(404).json({
-                      success:true, 
-                      msg: `Product with the id of ${req.params.productId} does not exist`,
-                      data: product
-              });
+                return next(new ErrorResponse(`Product with the id of ${req.params.productId} does not exist`, 404));
               }
               else{
                await product.destroy();
                return res.status(204).json();
-          } 
+              } 
           } catch (e) {
               console.log(e)
-              return res.status(500).send(e)
+              return next(new ErrorResponse(e.message, 500));
           }
     },
 }

@@ -1,6 +1,10 @@
 //category.js
 const Category = require("../models").Category;
 const {categorySchema} = require("../validators/category");
+const { handleError, ErrorHandler } = require('../utils/error')
+const ErrorResponse = require('../utils/error');
+
+
 
 
 
@@ -11,28 +15,25 @@ module.exports = {
   async getAllCategories(req, res) {
     try {
       const categoryCollection = await Category.findAll({})
-      return res.status(200).json({
-        success:true, 
-        msg: "Category retrieved successfully",
-        data: categoryCollection
-    }); 
+      return SuccessResponse("Category retrieved successfully", categoryCollection,  200)
+    //   return res.status(200).json({
+    //     success:true, 
+    //     msg: "Category retrieved successfully",
+    //     data: categoryCollection
+    // }); 
     } catch (e) {
         console.log(e)
-        return res.status(500).send(e)
-        }
+        return next(new ErrorResponse(e, 500));
+    }
   },
     // @desc    Get a category
     // @route   POST /api/v1/categories/categoryId
     // @access  Private
-  async getACategory(req, res) {
+  async getACategory(req, res, next) {
     try {
       const categoryCollection = await Category.findByPk(req.params.categoryId)
         if(categoryCollection === null){
-            return res.status(404).json({
-                success:true, 
-                msg: `Category with the id of ${req.params.categoryId} does not exist`,
-                data: categoryCollection
-        });
+          return next(new ErrorResponse(`Category with the id of ${req.params.categoryId} does not exist`, 404));
         }
         else{
         return res.status(200).json({
@@ -43,7 +44,8 @@ module.exports = {
     } 
     } catch (e) {
         console.log(e)
-        return res.status(500).send(e)
+        return next(new ErrorResponse(e, 500));
+
     }
   },
     // @desc    Create a new category
@@ -55,7 +57,7 @@ module.exports = {
 
         const categoryExists = await Category.findOne({ where:{name: req.body.name }});
         if(categoryExists){
-            return res.status(400).json({error_msg: "Category with the name exists"});
+          return next(new ErrorResponse(`Category with the id of ${req.body.name} does not exist`, 400));
         }  
         const categoryCollection = await Category.create({
             name: req.body.name,
@@ -79,11 +81,9 @@ module.exports = {
         const result = await categorySchema.validateAsync(req.body)
         const category = await Category.findByPk(req.params.categoryId)
           if(category === null){
-              return res.status(404).json({
-                  success:true, 
-                  msg: `Category with the id of ${req.params.categoryId} does not exist`,
-                  data: category
-          });
+        
+          return next(new ErrorResponse(`Category with the id of ${req.params.categoryId} does not exist`, 404));
+
           }
           else{
           await category.update({
@@ -100,7 +100,8 @@ module.exports = {
       } 
       } catch (e) {
           console.log(e)
-          return res.status(500).send(e)
+          return next(new ErrorResponse(e, 500));
+
       }
 },
 
@@ -111,11 +112,9 @@ module.exports = {
         try {
             const category = await Category.findByPk(req.params.categoryId)
               if(category === null){
-                  return res.status(404).json({
-                      success:true, 
-                      msg: `Category with the id of ${req.params.categoryId} does not exist`,
-                      data: category
-              });
+             
+              return next(new ErrorResponse(`Category with the id of ${req.params.categoryId} does not exist`, 404));
+
               }
               else{
                await category.destroy();
@@ -123,7 +122,8 @@ module.exports = {
           } 
           } catch (e) {
               console.log(e)
-              return res.status(500).send(e)
+              return next(new ErrorResponse(e.message, 500));
+
           }
     },
 }
