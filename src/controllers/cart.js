@@ -24,7 +24,7 @@ module.exports = {
     async addToCart(req, res, next) {
         const t = await db.transaction();
         try {
-
+            //validate request
             const result = await cartSchema.validateAsync(req.body)
             //check if product exists
             const productCollection = await Product.findByPk(req.body.productId)
@@ -44,13 +44,11 @@ module.exports = {
                 if(req.body.cartId === undefined){
                      //if not, create a new cart
                     const createCart = await Cart.create({
-                        // productId: req.body.productId,
                         userId:req.user.id,
                         quantity:req.body.quantity ? req.body.quantity : 1,
                         price: productCollection.sellingPrice,
                         totalPrice: req.body.quantity ? productCollection.sellingPrice * req.body.quantity : 1 * productCollection*sellingPrice
                     }, { transaction: t })
-                    // console.log()
 
                     if(createCart){
                         const cartProduct = await CartProduct.create({
@@ -98,8 +96,12 @@ module.exports = {
     async retrieveCart(req, res, next) {
         try {
           const cartCollection = await Cart.findOne({where:{id:req.params.cartId}, 
-       
+            include:
+            [
+              {model: Product, attributes: ['id', 'name']}
+          ]
         })
+            
             if(cartCollection === null){
                 return next(new ErrorResponse(`Cart with the id of ${req.params.cartId} does not exist`, 404));
             }
