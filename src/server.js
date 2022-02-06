@@ -7,7 +7,6 @@ const colors = require('colour')
 const xss = require('xss')
 const db = require('./config/db')
 const handleError = require('./utils/error')
-// const errorHandler  = require('./utils/error')
 const errorHandlerMiddleware = require('./middleware/errorHandlerMiddleware')
 
 

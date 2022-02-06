@@ -26,8 +26,11 @@ module.exports = {
     // @access  Public
   async getAllProducts(req, res, next) {
     try {
+      // { model: User, as: 'bands', attributes: ['id', 'name'] },
 
-      const productCollection = await Product.findAll({})
+      const productCollection = await Product.findAll({include: [
+        { model: Category, attributes: ['id', 'name'] }
+    ]})
       return SuccessResponse(res, "Product retrieved successfully", productCollection,  200)
 
     } catch (e) {
@@ -40,7 +43,10 @@ module.exports = {
     // @access  Private
   async getAProduct(req, res, next) {
     try {
-      const productCollection = await Product.findByPk(req.params.productId)
+      const productCollection = await Product.findOne({where:{id:req.params.productId}, include: [
+        { model: Category, attributes: ['id', 'name'] }
+
+    ]})
         if(productCollection === null){
           return next(new ErrorResponse(`Product with the id of ${req.params.productId} does not exist`, 404));
 
@@ -62,6 +68,7 @@ module.exports = {
   async createProduct(req, res, next) {
     try {
         const result = await productSchema.validateAsync(req.body)
+        
         const ProductExists = await Product.findAll({ where:{name: req.body.name }});
         const CategoryExists = await Category.findAll({where: {id:req.body.categoryId}})
 
@@ -88,7 +95,8 @@ module.exports = {
         return SuccessResponse(res, "Product created successfully", productCollection,  201)
   
     } catch (e) {
-      return next(new ErrorResponse(e.message, 500));
+      // console.log(e)
+      return next(new ErrorResponse(e, 500));
     }
   },
     // @desc    Update a particular product in the database

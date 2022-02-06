@@ -6,14 +6,13 @@ const errorHandler = (err, req, res, next) => {
   error.message = err.message;
 
   // Log to console for dev
-//   console.log(err);
+  console.log(err.message);
 
-  // Mongoose bad ObjectId
-//   if (err.name === 'CastError') {
-//     const message = `Resource not found`;
-//     error = new ErrorResponse(message, 404);
-//   }
-
+  // Validation error
+  let splittedString = err.message.split(":")
+  if (splittedString[0] === 'ValidationError') {
+    error = new ErrorResponse(splittedString, 422);
+  }
 
 
   res.status(error.statusCode || 500).json({

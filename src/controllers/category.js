@@ -1,7 +1,6 @@
 //category.js
 const Category = require("../models").Category;
 const {categorySchema} = require("../validators/category");
-const { handleError, ErrorHandler } = require('../utils/error')
 const ErrorResponse = require('../utils/error');
 const SuccessResponse = require('../utils/success')
 

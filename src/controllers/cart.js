@@ -101,18 +101,14 @@ module.exports = {
        
         })
             if(cartCollection === null){
-         
-            return next(new ErrorResponse(`Cart with the id of ${req.params.cartId} does not exist`, 404));
+                return next(new ErrorResponse(`Cart with the id of ${req.params.cartId} does not exist`, 404));
             }
             else{
-           
-            return SuccessResponse(res, "Cart retrieved successfully",cartCollection,  200)
-
-        } 
+                return SuccessResponse(res, "Cart retrieved successfully",cartCollection,  200)
+            } 
         } catch (e) {
             // console.log(e)
             return next(new ErrorResponse(e.message, 500));
-
         }
       },
       // @desc  Modify cart
