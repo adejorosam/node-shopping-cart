@@ -7,9 +7,15 @@ const productSchema = Joi.object({
   costPrice: Joi.number().required(),
   availableQuantity: Joi.number().required(),
   categoryId:Joi.number().required(),
-})
-
+}, ).options({ abortEarly: false })
 
 module.exports = {
   productSchema,
 }
+
+
+
+
+
+
+

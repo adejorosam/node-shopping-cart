@@ -17,5 +17,3 @@
 - run `sequelize db:migrate` to to run migration so as to set up database
 - run `npm start` to start the development server
 - run `docker-compose up` to run docker
-
-

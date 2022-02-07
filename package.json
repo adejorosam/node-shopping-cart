@@ -2,7 +2,8 @@
   "name": "paystack-test",
   "version": "1.0.0",
   "description": "Paystack's code test",
-  "main": "server.js",
+  "main": "./src/server.js",
+  
   "scripts": {
     "start": "nodemon server"
   },

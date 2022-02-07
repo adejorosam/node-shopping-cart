@@ -1,5 +1,7 @@
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
+const ErrorResponse = require('../utils/error');
+
 
 function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -12,7 +14,9 @@ function authMiddleware(req, res, next) {
     req.user = verified;
     return next();
   } catch (error) {
-    return res.status(400).json({ error_msg: "invalid token" });
+    return next(new ErrorResponse("Invalid token", 400));
+
+    // return res.status(400).json({ error_msg: "invalid token" });
   }
 }
 
