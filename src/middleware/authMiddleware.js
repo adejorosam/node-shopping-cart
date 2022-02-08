@@ -14,9 +14,8 @@ function authMiddleware(req, res, next) {
     req.user = verified;
     return next();
   } catch (error) {
-    return next(new ErrorResponse("Invalid token", 400));
+    return next(new ErrorResponse("Invalid token", 401));
 
-    // return res.status(400).json({ error_msg: "invalid token" });
   }
 }
 

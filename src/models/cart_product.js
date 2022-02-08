@@ -2,7 +2,7 @@
 module.exports = (sequelize, DataTypes) => {
 const db = require('../config/db');
 
-let cart_product = sequelize.define('cart_products', {
+let cart_products = sequelize.define('cart_products', {
     cartId: {
       type: DataTypes.INTEGER,
       references: {
@@ -18,7 +18,7 @@ let cart_product = sequelize.define('cart_products', {
       }
     }
   });
-    return cart_product
+    return cart_products
   }
 
 

@@ -126,7 +126,7 @@ module.exports = {
 
       } 
       } catch (e) {
-          console.log(e)
+          // console.log(e)
           return next(new ErrorResponse(e.message, 500));
       }
 },
