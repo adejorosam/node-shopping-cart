@@ -139,6 +139,7 @@ module.exports = {
                     return next(new ErrorResponse(`Product with the id of ${req.params.productId} does not exist`, 404));
                 
             }
+                //abstract this
                 if (productCollection.availableQuantity < 1) {
                     return SuccessResponse(res, "Product is out of stock",null,  200)
 
@@ -188,7 +189,7 @@ module.exports = {
                 
                     return next(new ErrorResponse(`Product with the id of ${req.params.productId} does not exist`, 404));
                 }
-                checkCart = await Cart.findOne({where: {productId:req.body.productId, id:req.params.cartId }})
+                checkCart = await CartProduct.findOne({where: {productId:req.body.productId, id:req.params.cartId }})
                 if(checkCart === null){
                     return next(new ErrorResponse(`Product with the id of ${req.params.productId} does not exist`, 404));
 
