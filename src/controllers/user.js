@@ -45,7 +45,6 @@ module.exports = {
  
       const userExists = await User.findOne({ where:{email: req.body.email}});
       if(userExists != null){
-            // return res.status(400).json({error_msg: "Email already exists"});
             return ErrorResponse("E-mail already exists",  400)
         }
         const userCollection = await User.create({

@@ -29,7 +29,7 @@ module.exports = {
             //check if product exists
             const productCollection = await Product.findByPk(req.body.productId)
             if(productCollection === null){
-                return next(new ErrorResponse(`Product with the id of ${req.params.productId} does not exist`, 404));
+                return next(new ErrorResponse(`Product with the id of ${req.body.productId} does not exist`, 404));
             }
 
             if (productCollection.availableQuantity < 1) {
@@ -47,16 +47,15 @@ module.exports = {
                         userId:req.user.id,
                         quantity:req.body.quantity ? req.body.quantity : 1,
                         price: productCollection.sellingPrice,
-                        totalPrice: req.body.quantity ? productCollection.sellingPrice * req.body.quantity : 1 * productCollection*sellingPrice
+                        totalPrice: req.body.quantity ? productCollection.sellingPrice * req.body.quantity : 1 * productCollection.sellingPrice
                     }, { transaction: t })
 
+                    
                     if(createCart){
-                        const cartProduct = await CartProduct.create({
-                            cartId: createCart.dataValues.id,
-                            productId: req.body.productId,
-                          }, { transaction: t })
+                        const cartProduct = await createCart.addProduct(req.body.productId)
+                        { transaction: t }
                     }
-                    // console.log(cart_product)
+
                     await t.commit();
 
                     return SuccessResponse(res, "Product added to cart successfully", createCart,  201)
@@ -85,7 +84,8 @@ module.exports = {
              // If the execution reaches this line, an error was thrown.
             // We rollback the transaction.
             await t.rollback();
-            return res.status(500).json({ error_msg: e.message });
+            return next(new ErrorResponse(e.message, 500));
+
         }
       },
 
@@ -136,7 +136,7 @@ module.exports = {
      
                 const productCollection = await Product.findByPk(req.body.productId)
                 if(productCollection === null){
-                    return next(new ErrorResponse(`Product with the id of ${req.params.productId} does not exist`, 404));
+                    return next(new ErrorResponse(`Product with the id of ${req.body.productId} does not exist`, 404));
                 
             }
                 //abstract this
@@ -146,7 +146,7 @@ module.exports = {
                 }
                 checkCart = CartProduct.findAll({where: {productId:req.body.productId, cartId:req.params.cartId }})
                 if(checkCart === null){
-                    return next(new ErrorResponse(`Product with the id of ${req.params.productId} does not exist in this cart`, 404));
+                    return next(new ErrorResponse(`Product with the id of ${req.body.productId} does not exist in this cart`, 404));
 
             }
             else{
@@ -187,11 +187,11 @@ module.exports = {
                 const productCollection = await Product.findByPk(req.body.productId)
                 if(productCollection === null){
                 
-                    return next(new ErrorResponse(`Product with the id of ${req.params.productId} does not exist`, 404));
+                    return next(new ErrorResponse(`Product with the id of ${req.body.productId} does not exist`, 404));
                 }
-                checkCart = await CartProduct.findOne({where: {productId:req.body.productId, id:req.params.cartId }})
+                let checkCart = await CartProduct.findOne({where: {productId:req.body.productId, cartId:req.params.cartId }})
                 if(checkCart === null){
-                    return next(new ErrorResponse(`Product with the id of ${req.params.productId} does not exist`, 404));
+                    return next(new ErrorResponse(`Product with the id of ${req.body.productId} does not exist in the cart`, 404));
 
                 }else{
 

@@ -1,7 +1,6 @@
 //PRODUCT Schema
 module.exports = (sequelize, DataTypes) => {
   let Product = sequelize.define("Product", {
-    // productId:DataTypes.INTEGER
     name: DataTypes.STRING,
     description: DataTypes.TEXT,
     userId:DataTypes.INTEGER,
@@ -17,7 +16,9 @@ module.exports = (sequelize, DataTypes) => {
   Product.associate = function(models) {
     Product.belongsToMany(models.Cart,{
       through: "cart_products",
-      // as: "carts",
+      onDelete: 'CASCADE',
+
+      as: "carts",
       // foreignKey: "cartId",
     })
   };

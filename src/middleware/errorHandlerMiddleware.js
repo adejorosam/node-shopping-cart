@@ -6,12 +6,13 @@ const errorHandler = (err, req, res, next) => {
   error.message = err.message;
 
   // Log to console for dev
-  console.log(err.message);
+  // console.log(err.message);
 
   // Validation error
-  let splittedString = err.message.split(":")
-  if (splittedString[0] === 'ValidationError') {
-    error = new ErrorResponse(splittedString, 422);
+  let splittedString = err.message.match("required")
+
+  if (splittedString != null ) {
+    error = new ErrorResponse(err.message, 422);
   }
 
 

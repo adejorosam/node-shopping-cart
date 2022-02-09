@@ -59,7 +59,8 @@ module.exports = {
         return SuccessResponse(res, "Category created successfully", categoryCollection,  201)
 
     } catch (e) {
-      return res.status(500).json({ error_msg: e.message });
+      return next(new ErrorResponse(e.message, 500));
+
 
     }
   },
