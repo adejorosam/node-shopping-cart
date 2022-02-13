@@ -3,7 +3,7 @@ const Category = require("../models").Category;
 const {categorySchema} = require("../validators/category");
 const ErrorResponse = require('../utils/error');
 const SuccessResponse = require('../utils/success')
-
+const categoryService = require("../services/category")
 
 
 
@@ -14,7 +14,7 @@ module.exports = {
     // @access  Public
   async getAllCategories(req, res, next) {
     try {
-      const categoryCollection = await Category.findAll({})
+      const categoryCollection = await categoryService.getAllCategories()
       return SuccessResponse(res, "Category retrieved successfully", categoryCollection,  200)
       
     } catch (e) {
@@ -27,14 +27,14 @@ module.exports = {
     // @access  Private
   async getACategory(req, res, next) {
     try {
-      const categoryCollection = await Category.findByPk(req.params.categoryId)
-        if(categoryCollection === null){
-          return next(new ErrorResponse(`Category with the id of ${req.params.categoryId} does not exist`, 404));
-        }
-        else{
-          return SuccessResponse(res, "Category retrieved successfully", categoryCollection,  200)
+      const categoryCollection = await categoryService.getSinglecategory(req.params.categoryId)
+        // if(categoryCollection === null){
+          // return next(new ErrorResponse(`Category with the id of ${req.params.categoryId} does not exist`, 404));
+        // }
+        // else{
+      return SuccessResponse(res, "Category retrieved successfully", categoryCollection,  200)
 
-    } 
+    // } 
     } catch (e) {
         console.log(e)
         return next(new ErrorResponse(e, 500));

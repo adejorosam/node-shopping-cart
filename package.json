@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Paystack's code test",
   "main": "./src/server.js",
-  
   "scripts": {
     "start": "nodemon server"
   },
@@ -35,6 +34,7 @@
     "morgan": "^1.10.0",
     "multer": "^1.4.3",
     "mysql2": "^2.3.2",
+    "node-cache": "^5.1.2",
     "nodemon": "^2.0.14",
     "sequelize": "^6.8.0",
     "xss": "^1.0.10"
